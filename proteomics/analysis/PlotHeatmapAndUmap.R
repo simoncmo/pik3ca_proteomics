@@ -5,20 +5,17 @@ library(fgsea)
 
 ##############################
 ## LOAD data
-setwd('~/Library/CloudStorage/Box-Box/Ding_Lab/Projects_Current/2021/PIK3CA_PDX/Analysis/proteomic/')
-protein_flattened_wide = read_tsv('processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed.tsv')
-protein_long_meta = read_tsv('processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed_long_w_meta.tsv')
-meta = read_tsv('../../Data/Metadata/Proteomics_Meta_lodaing_merged_02222022.tsv')
-markers = read_tsv('../../Resource/Marker/KEGG_PI3K-AKI_genelist.txt')
+setwd('~/Library/CloudStorage/Box-Box/Ding_Lab/Projects_Current/2021/PIK3CA_PDX/Analysis/')
+protein_flattened_wide = read_tsv('proteomic/processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed.tsv')
+protein_long_meta = read_tsv('proteomic/processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed_long_w_meta.tsv')
+meta = read_tsv('../Data/Metadata/Proteomics_Meta_lodaing_merged_02222022.tsv')
+markers = read_tsv('../Resource/Marker/KEGG_PI3K-AKI_genelist.txt')
 # https://www.genome.jp/pathway/hsa04151
 
 
 ##############################
 ## Source functions
-source('script/function_dataobj_def.R')
-source('script/function_plot_heatmap.R')
-source('script/function_plot_umap.R')
-source('script/palette_meta.R')
+walk(list.files('script/proteomics/src/', full.names = T), source)
 
 
 ####################################################################################################
@@ -39,9 +36,11 @@ palette_list_pancan = c(palette_list_use)
 #####################################################
 #####################################################
 #### PANCAN
+# Step1: Make Plot object 
 pancan_obj = MakeDataObj(protein_mtx_human, meta = meta, top_var = 0.8) %>% 
     MakeCluster(k=5) %>% 
     MakeUmap()
+# Step 2: Make heatmap
 # heatmap
 dir.create('figure/Pancan/')
 pdf('figure/Pancan/Heatmap.pdf', width = 10, height = 10)
