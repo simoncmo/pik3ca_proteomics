@@ -12,7 +12,7 @@ setMethod('show','dataobj', function(object){
   cat('Setting:', toString(unlist(object@settings)),'\n')
 }) 
 ## Make data frame 
-MakeDataObj = function(mtx, meta, na_cutoff = 0.5, top_var = 0.9, histology
+MakeDataObj = function(mtx, meta, na_cutoff = 0.5, top_var = 0.9, histology, filter_na = T, filter_var = T
 ){
   
   #### Meta and Sample filtering
@@ -24,19 +24,21 @@ MakeDataObj = function(mtx, meta, na_cutoff = 0.5, top_var = 0.9, histology
   
   #### GENE filtering
   # Filter by NA percent
-  na_cutoff = 0.5
-  pro_na_percent = mtx %>% apply(1, is.na) %>% colMeans()
-  pro_filtered   = pro_na_percent[pro_na_percent < na_cutoff] %>% names
-  mtx_filtered   = mtx[pro_filtered, ]
+  if(filter_na){
+    pro_na_percent = mtx %>% apply(1, is.na) %>% colMeans()
+    pro_filtered   = pro_na_percent[pro_na_percent < na_cutoff] %>% names
+    mtx_filtered   = mtx[pro_filtered, ]
+  }
   
   # Selecy by var
   pro_var = mtx_filtered %>% apply(1, var, na.rm=T)
   var_cutoff = quantile(pro_var, top_var) # top 10 most variable genes 
-  pro_select = pro_var[pro_var > var_cutoff] %>% names
+  pro_select = if(filter_var) pro_var[pro_var > var_cutoff] %>% names else names(pro_var)
   mtx_selected = mtx_filtered[pro_select,]
   
   # meta for gene
   gene.meta = data.frame(Var = pro_var, Var_rank = rank(pro_var), Top_gene = pro_var > var_cutoff)
+  
   
   # Make obj
   settings = list(na_cutoff = na_cutoff, top_var=top_var)

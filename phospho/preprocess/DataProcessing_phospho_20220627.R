@@ -5,7 +5,7 @@ library(patchwork)
 ##############################
 ## LOAD data
 setwd('~/Library/CloudStorage/Box-Box/Ding_Lab/Projects_Current/2021/PIK3CA_PDX/Data/Phospho/')
-site_level = read_tsv('phosphosite_matrix-intensities_normalized(1).tsv')
+site_level = read_tsv('phosphosite_matrix-log2_ratios-MD_norm(1).tsv')
 gene_level = read_tsv('phosphogene_matrix-log2_ratios-MD_norm(1).tsv')
 peptide_level = read_tsv('phosphopeptide_matrix-log2_ratios-MD_norm(1).tsv')
 meta = read_tsv('../Metadata/Proteomics_Meta_lodaing_merged_02222022.tsv')
@@ -32,7 +32,7 @@ idx_col = 'Phosphosite.Index'
 site_level_df = site_level %>% separate(col = idx_col, sep = '[|,_]', into = c('Database','UniprotID','Gene','Species',
                                                                                               'FirstPossiblePhosphoSite','SecondPossiblePhosphoSite',
                                                                                               'NumbPossiblePhosphoSite','NumbLocalizedPhosphoSite','LocalizedPhosphosites'), remove = F)
-
+site_level_df[site_level_df=='None'] = NA # Replace None to NA
 # 2. Keep 'Localized only"
 site_level_Localized_df =site_level_df %>% filter(!is.na(LocalizedPhosphosites))
 message(str_glue("Filtered out {nrow(site_level_df) - nrow(site_level_Localized_df)} fragments, with {nrow(site_level_Localized_df)} rows left."))
@@ -45,15 +45,15 @@ site_level_Localized_df = site_level_Localized_df %>% select(-all_of(col_rm))
 id_cols = names(site_level_Localized_df) %>% str_subset('PA|pool', negate =T)
 site_flattened_long = site_level_Localized_df %>% pivot_longer(cols = -id_cols,
                                                           names_to = 'Sample aliquot ID', 
-                                                          values_to = 'Phospho_Site_level')# %>% 
-  #mutate(Phospho_Site_level = as.numeric(Phospho_Site_level)) %>% 
-  #filter(!is.na(Phospho_Site_level)) # Remove Those without reads
+                                                          values_to = 'Phospho_Site_level') %>% 
+  mutate(Phospho_Site_level = as.numeric(Phospho_Site_level)) %>% 
+  filter(!is.na(Phospho_Site_level)) # Remove Those without reads
 
 # Add Long table + meta
-protein_long_meta = left_join(protein_flattened_long, meta, by = 'Sample aliquot ID') 
+site_long_meta = left_join(site_flattened_long, meta, by = 'Sample aliquot ID') 
 
 ## OUTPUT
-dir.create('processed_table/06072022/')
-write_tsv(protein_flattened_wide, 'processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed.tsv')
-write_tsv(protein_long_meta, 'processed_table/06072022/protein_matrix-log2_ratios-MD_norm(2)_processed_long_w_meta.tsv')
+dir.create('processed_table/06282022/')
+write_tsv(site_level_Localized_df, 'processed_table/06282022/phosphosite_matrix-log2_ratios-MD_norm(1)_localized_processed.tsv')
+write_tsv(site_long_meta, 'processed_table/06282022/phosphosite_matrix-log2_ratios-MD_norm(1)_localized_processed_long_w_meta.tsv')
 

@@ -79,6 +79,8 @@ MakeTopProHeatmap = function(data_obj, na_cutoff = 0.5, top_var = 0.9, histology
                              anno_regular = c("Institution",'Histology', "PIK3CA mutation","Passage (pro)", 'cluster'),
                              palette_list = list(),
                              split_column = T,
+                             show_column_names = T,
+                             show_row_names = F,
                              split_column_by = 'cluster',
                              gene_highlight = markers$Gene, # By default highlight PIK3CA genes
                              ...
@@ -119,13 +121,13 @@ MakeTopProHeatmap = function(data_obj, na_cutoff = 0.5, top_var = 0.9, histology
   }
   
   #return(mtx_selected)
-  heatmap_param = c(list(matrix = mtx_selected %>% t %>% scale %>% t,
+  heatmap_param = c(list(matrix = mtx_selected %>% t %>% scale %>% t, 
                        right_annotation = rw_anno, 
                        top_annotation = top_annot, 
                        name = 'Protein\nLevel\nScaled',
-                       show_row_names = F,
-                       show_row_dend = F,
-                       show_column_names = F), list(...))
+                       show_row_names = show_row_names,
+                       show_column_names = show_column_names,
+                       show_row_dend = F), list(...))
   
   # split
   if(split_column) heatmap_param = c(heatmap_param, list(column_split = meta_data[[split_column_by]]))
