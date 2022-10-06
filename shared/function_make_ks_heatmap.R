@@ -87,16 +87,22 @@ MakeKSHeatmap_base = function(protein_wide_mtx, phos_wide_mtx, meta_table ,kinas
         message('Sample order from Kinase')
     }
 
+    print(combined_matrix)
     # MATRIX:ROW:ORDER Get sample order without Kinase protein
-    if(mode == 'Kinase'){
-        # Kinase only: Protein on TOP
-        hclust_result = combined_matrix %>% .[rownames(.)!=kinase_of_interest, ] %>% dist %>% hclust # %>% .$order
-        feature_ordered = hclust_result$labels[hclust_result$order] %>% rev
-        feature_ordered = c(kinase_of_interest, feature_ordered) # Add kinase protein back
+    if(nrow(combined_matrix) < 3){ # not enough row to cluster - skip
+        feature_ordered = rownames(combined_matrix) %>% sort
     }else{
-        hclust_result = combined_matrix %>% dist %>% hclust # %>% .$order
-        feature_ordered = hclust_result$labels[hclust_result$order] %>% rev
+    if(mode == 'Kinase'){
+            # Kinase only: Protein on TOP
+            hclust_result = combined_matrix %>% .[rownames(.)!=kinase_of_interest, ] %>% dist %>% hclust # %>% .$order
+            feature_ordered = hclust_result$labels[hclust_result$order] %>% rev
+            feature_ordered = c(kinase_of_interest, feature_ordered) # Add kinase protein back
+        }else{
+            hclust_result = combined_matrix %>% dist %>% hclust # %>% .$order
+            feature_ordered = hclust_result$labels[hclust_result$order] %>% rev
+        }
     }
+    
     
     
     # MATRIX:COLUMN:ORDER: Reorder matrix and meta.data
